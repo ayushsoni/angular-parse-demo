@@ -5,8 +5,8 @@
 
 "use strict";
 
-
-angular.module('ToDoApp', [])
+//how to use ui bootstrap
+angular.module('ToDoApp', ['ui.bootstrap'])
     .config(function($httpProvider) {
         //Parse required two extra headers sent with every HTTP request: X-Parse-Application-Id, X-Parse-REST-API-Key
         //the first needs to be set to your application's ID value
@@ -25,21 +25,21 @@ angular.module('ToDoApp', [])
         //sending a DELETE to this URL + '/' + task.objectId will delete an existing task
         var tasksUrl = 'https://api.parse.com/1/classes/tasks';
 
-        $scope.refreshTasks = function() {
+        $scope.refreshTasks = function () {
             //get all tasks
             $scope.loading = true;
             $http.get(tasksUrl + '?where={"done": false}')
-                .success(function(responseData) {
+                .success(function (responseData) {
                     //when returning a list of data, Parse will always return an
                     //object with one property called 'results', which will contain an
                     //array containing all the data objects
                     $scope.tasks = responseData.results;
                 })
-                .error(function(err) {
+                .error(function (err) {
                     console.log(err);
                     //notify user in some way
                 })
-                .finally(function() {
+                .finally(function () {
                     $scope.loading = false;
                 });
         }; //$scope.refreshTasks()
@@ -51,10 +51,10 @@ angular.module('ToDoApp', [])
         $scope.newTask = {done: false};
 
         //function to add a new task to the list
-        $scope.addTask = function(task) {
+        $scope.addTask = function (task) {
             $scope.inserting = true;
             $http.post(tasksUrl, task)
-                .success(function(responseData) {
+                .success(function (responseData) {
                     //Parse will return the new objectId in the response data
                     //copy that to the task we just inserted
                     task.objectId = responseData.objectId;
@@ -65,29 +65,47 @@ angular.module('ToDoApp', [])
                     //reset newTask to clear the form
                     $scope.newTask = {done: false};
                 })
-                .error(function(err) {
+                .error(function (err) {
                     console.log(err);
                     //report to user in some way
                 })
-                .finally(function() {
+                .finally(function () {
                     $scope.inserting = false;
                 });
         };
 
         //function to update an existing task
-        $scope.updateTask = function(task) {
+        $scope.updateTask = function (task) {
             $scope.updating = true;
             $http.put(tasksUrl + '/' + task.objectId, task)
-                .success(function(responseData) {
+                .success(function (responseData) {
                     //nothing we really need to do since local object is already up-to-date
                 })
-                .error(function(err) {
+                .error(function (err) {
                     console.log(err);
                     //notify user in some way
                 })
-                .finally(function() {
+                .finally(function () {
                     $scope.updating = false;
                 });
-        };
+        };//updateTask()
 
+        $scope.incrementVotes = function (task, amount) {
+            $http.put(tasksUrl + '/' + task.objectId, {
+                votes: {
+                    _op: 'Increment',
+                    amount: amount
+                }
+            })
+                .success(function (responseData) {
+                    console.log(responseData);
+                    task.votes = responseData.votes;
+                })
+                .error(function (responseData) {
+                    console.log(err);
+                })
+                .finally(function () {
+                    $scope.updating = false;
+                })
+        }; //incrementVotes()
     });
